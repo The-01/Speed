@@ -56,7 +56,7 @@ def take_command():
     return querry
 
 
-def send_email(my_email, content):
+def send_email(target_email, content):
     server = smtplib.SMTP("smtp.gmail.com", 587)
     server.ehlo()
     server.starttls()
