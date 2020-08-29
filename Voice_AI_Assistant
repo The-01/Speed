@@ -1,0 +1,134 @@
+import pyttsx3
+import datetime
+import speech_recognition as sr
+import wikipedia
+import webbrowser
+import os
+import random
+import smtplib
+
+engine = pyttsx3.init("sapi5")
+voices = engine.getProperty("voices")
+engine.setProperty("voice", voices[0].id)
+
+
+def speak(audio):
+    """This function speaks any string passed to it"""
+
+    engine.say(audio)
+    engine.runAndWait()
+
+
+def greet():
+    """This function greets the user"""
+
+    hour = int(datetime.datetime.now().hour)
+    if 0 < hour < 12:
+        speak("Good Morning!")
+
+    elif 12 <= hour <= 18:
+        speak("Good Afternoon!")
+
+    else:
+        speak("Good Evening!")
+
+    speak(intro)
+
+
+def take_command():
+    """This function takes microphone's command from the user and return string output"""
+
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("Listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source)
+
+    try:
+        print("Recognizing...")
+        querry = r.recognize_google(audio, language="en-in")
+        print(f"User said: {querry}\n")
+        speak("Alright Sir, wait a moment...")
+
+    except sr.UnknownValueError:
+        print("Sorry Sir, I can't recognize your voice properly...")
+        return "None"
+    return querry
+
+
+def send_email(my_email, content):
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.ehlo()
+    server.starttls()
+    server.login(my_email, my_password)
+    server.sendmail(my_email, target_email, content)
+    server.close()
+
+
+if __name__ == '__main__':
+    intro = "Hello Sir, My name is Speed... I'm Your personal assistant. Please tell me how can I help You?"
+    greet()
+
+    while True:
+        querry = take_command().lower()
+
+        # Logic for executing tasks based on querry
+        if 'wikipedia' in querry:
+            speak("Searching wikipedia...")
+            querry = querry.replace("wikipedia", "")
+            result = wikipedia.summary(querry, sentences=3)
+            speak(f"According to wikipedia, {result}")
+            break
+
+        elif 'youtube' in querry:
+            webbrowser.open("www.youtube.com")
+            break
+
+        elif 'google' in querry:
+            webbrowser.open("www.google.com")
+            break
+
+        elif 'song' in querry:
+            songs_dir = r"D:\Audio songs\Songs"
+            songs = os.listdir(songs_dir)
+            song = random.choice(songs)
+            os.startfile(os.path.join(songs_dir, song))
+            break
+
+        elif 'pycharm' in querry:
+            path = r"C:\Program Files\JetBrains\PyCharm Community Edition 2019.3.3\bin\pycharm64"
+            os.startfile(path)
+            break
+
+        elif 'time' in querry:
+            time = datetime.datetime.now().strftime("%H:%M:%S")
+            speak(f"Sir, the time is, {time}")
+            break
+
+        elif 'date' in querry:
+            date = datetime.date.today()
+            speak(f"Sir, today's date is, {date}")
+            break
+
+        elif 'email to ullu' in querry:
+            try:
+                speak("Please tell me the content of the email")
+                content = take_command()
+                with open("password.txt") as f:
+                    password = f.read()
+
+                my_email = "atiff091@gmail.com"
+                my_password = password
+                target_email = "ullukapatta107@gmail.com"
+                send_email(target_email, content)
+                speak("Email has been sent successfully")
+
+            except Exception as e:
+                speak("Sorry Sir, I can't send email right now")
+
+            break
+
+        elif 'exit' in querry:
+            exit()
+
+
